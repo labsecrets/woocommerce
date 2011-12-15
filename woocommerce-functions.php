@@ -958,3 +958,40 @@ function woocommerce_check_comment_rating($comment_data) {
 	}
 	return $comment_data;
 }
+
+/**
+* WP Affiliate eCommerce tracking
+**/
+
+add_action( 'woocommerce_thankyou', 'woocommerce_wp_affiliate_tracking' );
+
+function woocommerce_wp_affiliate_tracking( $order_id )
+{
+
+global $woocommerce;
+
+if ( empty( $_COOKIE['ap_id'] ) ) return;
+
+$referrer = $_COOKIE['ap_id'];
+
+$order    = &new woocommerce_order($order_id);
+
+if ( is_user_logged_in() )
+{
+
+    $user_id      = get_current_user_id();
+    $current_user = get_user_by('id', $user_id);
+    $username     = $current_user->user_login;
+    $email        = $current_user->user_email;
+
+} else {
+
+    $user_id        = '';
+    $username       = __('Guest', 'woothemes');
+    $email                  = '';
+
+}
+
+do_action('wp_affiliate_process_cart_commission', array( "referrer" => $referrer, "sale_amt" => $order->order_total, "txn_id" => $order_id, "buyer_email" => $email ) );
+
+} // end affiliate_tracking
